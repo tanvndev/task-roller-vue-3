@@ -1,0 +1,182 @@
+@import './base.css';
+
+/* Full màn hình */
+.fullscreen-container {
+  /* min-width: 100vw; */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: linear-gradient(to right, #74ebd5, #acb6e5);
+}
+
+/* Hộp chứa nội dung */
+.content {
+  width: 80%;
+  max-width: 900px;
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+/* Tiêu đề */
+.title {
+  font-size: 26px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Bố cục danh sách */
+.list-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.box {
+  flex: 1;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.title-bottom {
+  font-size: 16px;
+  margin-top: 10px;
+  margin-bottom: 0;
+  color: #333;
+}
+
+/* Nhóm nhập liệu */
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.input-field {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Nút bấm */
+.btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #2980b9;
+}
+
+/* Nút chính */
+.btn-primary {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: 0.3s;
+  margin-top: 10px;
+}
+
+.btn-primary:hover {
+  background: #219150;
+}
+
+/* Nút phụ */
+.btn-secondary {
+  background: #f39c12;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.btn-secondary:hover {
+  background: #e67e22;
+}
+
+/* Danh sách */
+ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+}
+
+li {
+  background: #ecf0f1;
+  margin: 5px 0;
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.list-container li {
+  border: 1px solid transparent;
+}
+.list-container li:hover {
+  border-color: #3498db;
+}
+
+/* Nút Xóa */
+.delete-btn {
+  background: transparent;
+  border: none;
+  font-size: 12px;
+  cursor: pointer;
+  color: red;
+  transition: 0.3s;
+}
+
+.delete-btn:hover {
+  color: darkred;
+}
+
+/* Kết quả phân công */
+.result-box {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.list-result {
+  display: flex;
+  justify-self: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ultil */
+.mb-0 {
+  margin-bottom: 0;
+}
+.d-none {
+  display: none;
+}
