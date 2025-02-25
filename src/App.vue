@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 
 const people = ref(JSON.parse(localStorage.getItem('people')) || [])
 const tasks = ref(JSON.parse(localStorage.getItem('tasks')) || [])
@@ -63,10 +63,12 @@ const assignTasks = () => {
   }
 
   // Gộp công việc thành một dòng
-  assignedTasks.value = Array.from(taskMap.entries()).map(([person, tasks]) => ({
-    person,
-    task: tasks.join(' + '), // Nối tất cả công việc lại
-  }))
+  assignedTasks.value = Array.from(taskMap.entries())
+    .filter(([_, tasks]) => tasks.length > 0) // Lọc bỏ những người không có việc
+    .map(([person, tasks]) => ({
+      person,
+      task: tasks.join(' + '), // Gộp công việc thành một dòng
+    }))
 }
 
 const copyToClipboard = () => {
