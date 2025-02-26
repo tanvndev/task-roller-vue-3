@@ -1,11 +1,14 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 const people = ref(JSON.parse(localStorage.getItem('people')) || [])
 const tasks = ref(JSON.parse(localStorage.getItem('tasks')) || [])
 const selectedPeople = ref([])
 const selectedTasks = ref([])
 const assignedTasks = ref(JSON.parse(localStorage.getItem('assignedTasks')) || [])
+
+const allPeopleSelected = computed(() => selectedPeople.value.length === people.value.length)
+const allTasksSelected = computed(() => selectedTasks.value.length === tasks.value.length)
 
 const newPerson = ref('')
 const addPerson = () => {
@@ -26,6 +29,16 @@ const addTask = () => {
     tasks.value.push(newTask.value)
     newTask.value = ''
   }
+}
+
+// Toggle chọn tất cả người trực nhật
+const toggleSelectAllPeople = () => {
+  selectedPeople.value = allPeopleSelected.value ? [] : [...people.value]
+}
+
+// Toggle chọn tất cả công việc
+const toggleSelectAllTasks = () => {
+  selectedTasks.value = allTasksSelected.value ? [] : [...tasks.value]
 }
 
 const removeTask = (index) => {
@@ -127,6 +140,17 @@ watch(
             />
             <button @click="addPerson" class="btn">Thêm</button>
           </div>
+          <div class="my-10">
+            <label class="cyberpunk-checkbox-label">
+              <input
+                type="checkbox"
+                class="cyberpunk-checkbox"
+                :checked="allPeopleSelected"
+                @change="toggleSelectAllPeople"
+              />
+              Chọn tất cả</label
+            >
+          </div>
           <ul>
             <li v-for="(person, index) in people" :key="person">
               <label class="cyberpunk-checkbox-label">
@@ -157,6 +181,17 @@ watch(
               @keyup.enter="addTask"
             />
             <button @click="addTask" class="btn">Thêm</button>
+          </div>
+          <div class="my-10">
+            <label class="cyberpunk-checkbox-label">
+              <input
+                type="checkbox"
+                class="cyberpunk-checkbox"
+                :checked="allTasksSelected"
+                @change="toggleSelectAllTasks"
+              />
+              Chọn tất cả</label
+            >
           </div>
           <ul>
             <li v-for="(task, index) in tasks" :key="task">
