@@ -1,52 +1,72 @@
 <script setup>
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from 'firebase/firestore'
 import { computed, onMounted, ref, watch } from 'vue'
+import Loading from './components/Loading.vue'
+import { db } from './firebase'
 
-const people = ref(JSON.parse(localStorage.getItem('people')) || [])
-const tasks = ref(JSON.parse(localStorage.getItem('tasks')) || [])
+const people = ref([])
+const tasks = ref([])
 const selectedPeople = ref([])
 const selectedTasks = ref([])
-const assignedTasks = ref(JSON.parse(localStorage.getItem('assignedTasks')) || [])
+const assignedTasks = ref([JSON.parse(localStorage.getItem('assignedTasks')) || []])
 
 const allPeopleSelected = computed(() => selectedPeople.value.length === people.value.length)
 const allTasksSelected = computed(() => selectedTasks.value.length === tasks.value.length)
 
 const newPerson = ref('')
-const addPerson = () => {
-  if (newPerson.value.trim() && !people.value.includes(newPerson.value)) {
-    people.value.push(newPerson.value)
+const addPerson = async () => {
+  if (newPerson.value.trim() && !people.value.includes((p) => p.name === newPerson.value)) {
     newPerson.value = ''
+    return alert('Nhập tên chưa hay nhập trùng tên rồi ?')
   }
+
+  const payload = { name: newPerson.value }
+  await addDoc(collection(db, 'people'), payload)
+  getAllData()
+  newPerson.value = ''
 }
 
-const removePerson = (index) => {
-  people.value.splice(index, 1)
-  selectedPeople.value = selectedPeople.value.filter((person) => people.value.includes(person))
+const removePerson = async (id) => {
+  await deleteDoc(doc(db, 'people', id))
+  getAllData()
 }
 
 const newTask = ref('')
-const addTask = () => {
-  if (newTask.value.trim() && !tasks.value.includes(newTask.value)) {
-    tasks.value.push(newTask.value)
+const addTask = async () => {
+  if (newTask.value.trim() && !tasks.value.includes((t) => t.name === newTask.value)) {
     newTask.value = ''
+    return alert('Nhập việc chưa hay nhập trùng việc rồi ?')
   }
+
+  const payload = { name: newTask.value }
+  await addDoc(collection(db, 'tasks'), payload)
+  getAllData()
+  newTask.value = ''
 }
 
-// Toggle chọn tất cả người trực nhật
 const toggleSelectAllPeople = () => {
-  selectedPeople.value = allPeopleSelected.value ? [] : [...people.value]
+  selectedPeople.value = allPeopleSelected.value ? [] : [...people.value.map((p) => p.id)]
 }
 
-// Toggle chọn tất cả công việc
 const toggleSelectAllTasks = () => {
-  selectedTasks.value = allTasksSelected.value ? [] : [...tasks.value]
+  selectedTasks.value = allTasksSelected.value ? [] : [...tasks.value.map((t) => t.id)]
 }
 
-const removeTask = (index) => {
-  tasks.value.splice(index, 1)
-  selectedTasks.value = selectedTasks.value.filter((task) => tasks.value.includes(task))
+const removeTask = async (id) => {
+  await deleteDoc(doc(db, 'tasks', id))
+  getAllData()
 }
 
-const assignTasks = () => {
+const assignTasks = async () => {
   if (people.value.length === 0 || tasks?.value.length === 0) {
     assignedTasks.value = []
     return alert('Nhìn xem đã nhập người và công việc chưa ?')
@@ -62,26 +82,50 @@ const assignTasks = () => {
 
   let taskMap = new Map()
 
-  shuffledPeople.forEach((person) => {
+  shuffledPeople.forEach((personId) => {
     if (shuffledTasks.length > 0) {
-      taskMap.set(person, [shuffledTasks.shift()])
+      taskMap.set(personId, [shuffledTasks.shift()])
     } else {
-      taskMap.set(person, [])
+      taskMap.set(personId, [])
     }
   })
 
   while (shuffledTasks.length > 0) {
-    let person = shuffledPeople[Math.floor(Math.random() * shuffledPeople.length)]
-    taskMap.get(person).push(shuffledTasks.shift())
+    let personId = shuffledPeople[Math.floor(Math.random() * shuffledPeople.length)]
+    taskMap.get(personId).push(shuffledTasks.shift())
   }
 
-  // Gộp công việc thành một dòng
-  assignedTasks.value = Array.from(taskMap.entries())
-    .filter(([_, tasks]) => tasks.length > 0) // Lọc bỏ những người không có việc
-    .map(([person, tasks]) => ({
-      person,
-      task: tasks.join(' + '), // Gộp công việc thành một dòng
-    }))
+  assignedTasks.value = Array.from(taskMap.entries()).map(([personId, taskIds]) => {
+    const person = people.value.find((p) => p.id === personId)?.name || 'Unknown'
+    const taskNames = taskIds.map((id) => tasks.value.find((t) => t.id === id)?.name).join(' + ')
+    return { person, task: taskNames }
+  })
+
+  const today = new Date().toISOString().split('T')[0] // Lấy ngày hiện tại (YYYY-MM-DD)
+
+  const resultsCollection = collection(db, 'results')
+  const q = query(resultsCollection, where('date', '==', today))
+  const querySnapshot = await getDocs(q)
+
+  if (!querySnapshot.empty) {
+    // Nếu đã có, cập nhật kết quả
+    const docRef = querySnapshot.docs[0].ref
+    await updateDoc(docRef, { tasks: assignedTasks.value })
+    console.log(1)
+  } else {
+    console.log(2)
+
+    // Nếu chưa có, thêm mới
+    await addDoc(resultsCollection, { date: today, tasks: assignedTasks.value })
+  }
+}
+
+const getAllData = async () => {
+  const tasksSnapshot = await getDocs(collection(db, 'tasks'))
+  tasks.value = tasksSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+
+  const peopleSnapshot = await getDocs(collection(db, 'people'))
+  people.value = peopleSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
 }
 
 const copyToClipboard = () => {
@@ -91,18 +135,9 @@ const copyToClipboard = () => {
   navigator.clipboard.writeText(text)
 }
 
-watch(
-  [people, tasks, assignedTasks],
-  () => {
-    localStorage.setItem('people', JSON.stringify(people.value))
-    localStorage.setItem('tasks', JSON.stringify(tasks.value))
-    localStorage.setItem('assignedTasks', JSON.stringify(assignedTasks.value))
-  },
-  { deep: true },
-)
-
 // Load dữ liệu từ LocalStorage khi mở trang
 onMounted(() => {
+  getAllData()
   selectedPeople.value = JSON.parse(localStorage.getItem('selectedPeople')) || []
   selectedTasks.value = JSON.parse(localStorage.getItem('selectedTasks')) || []
   assignedTasks.value = JSON.parse(localStorage.getItem('assignedTasks')) || []
@@ -123,9 +158,13 @@ watch(
 <template>
   <div class="fullscreen-container">
     <div class="content">
-      <h1 class="title">TaskRoller - Random Công Việc</h1>
+      <div class="logo-container">
+        <img src="https://www.roller.software/hubfs/Favicon_192x192.png" alt="logo" class="logo" />
+        <h1 class="title">TaskRoller - Random Công Việc</h1>
+      </div>
 
       <div class="list-container">
+        <!-- Box people -->
         <div class="box">
           <h2 class="title-top">
             Danh sách người trực nhật
@@ -140,37 +179,45 @@ watch(
             />
             <button @click="addPerson" class="btn">Thêm</button>
           </div>
-          <div class="my-10">
-            <label class="cyberpunk-checkbox-label">
-              <input
-                type="checkbox"
-                class="cyberpunk-checkbox"
-                :checked="allPeopleSelected"
-                @change="toggleSelectAllPeople"
-              />
-              Chọn tất cả</label
-            >
-          </div>
-          <ul>
-            <li v-for="(person, index) in people" :key="person">
+          <!-- List people -->
+          <div v-if="people.length">
+            <div class="my-10">
               <label class="cyberpunk-checkbox-label">
                 <input
                   type="checkbox"
                   class="cyberpunk-checkbox"
-                  :value="person"
-                  v-model="selectedPeople"
+                  :checked="allPeopleSelected"
+                  @change="toggleSelectAllPeople"
                 />
-                {{ person }}</label
-              >
-              <button @click="removePerson(index)" class="delete-btn">❌</button>
-            </li>
-          </ul>
-          <h2 class="title-bottom">
-            Người được chọn:
-            <span>{{ selectedPeople?.length }}</span>
-          </h2>
+
+                {{ allPeopleSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả' }}
+              </label>
+            </div>
+            <ul>
+              <li v-for="(person, index) in people" :key="person.id">
+                <label class="cyberpunk-checkbox-label">
+                  <input
+                    type="checkbox"
+                    class="cyberpunk-checkbox"
+                    :value="person.id"
+                    v-model="selectedPeople"
+                  />
+                  {{ person.name }}</label
+                >
+                <button @click="removePerson(person.id)" class="delete-btn">❌</button>
+              </li>
+            </ul>
+            <h2 class="title-bottom">
+              Người được chọn:
+              <span>{{ selectedPeople?.length }}</span>
+            </h2>
+          </div>
+          <div v-else class="">
+            <Loading />
+          </div>
         </div>
 
+        <!-- Box tasks -->
         <div class="box">
           <h2>Danh sách công việc ({{ tasks?.length }})</h2>
           <div class="input-group">
@@ -182,35 +229,43 @@ watch(
             />
             <button @click="addTask" class="btn">Thêm</button>
           </div>
-          <div class="my-10">
-            <label class="cyberpunk-checkbox-label">
-              <input
-                type="checkbox"
-                class="cyberpunk-checkbox"
-                :checked="allTasksSelected"
-                @change="toggleSelectAllTasks"
-              />
-              Chọn tất cả</label
-            >
-          </div>
-          <ul>
-            <li v-for="(task, index) in tasks" :key="task">
+
+          <!-- List tasks -->
+          <div v-if="tasks.length">
+            <div class="my-10">
               <label class="cyberpunk-checkbox-label">
                 <input
                   type="checkbox"
                   class="cyberpunk-checkbox"
-                  :value="task"
-                  v-model="selectedTasks"
+                  :checked="allTasksSelected"
+                  @change="toggleSelectAllTasks"
                 />
-                {{ task }}</label
-              >
-              <button @click="removeTask(index)" class="delete-btn">❌</button>
-            </li>
-          </ul>
-          <h2 class="title-bottom">
-            Việc được chọn:
-            <span>{{ selectedTasks?.length }}</span>
-          </h2>
+
+                {{ allTasksSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả' }}
+              </label>
+            </div>
+            <ul>
+              <li v-for="(task, index) in tasks" :key="task.id">
+                <label class="cyberpunk-checkbox-label">
+                  <input
+                    type="checkbox"
+                    class="cyberpunk-checkbox"
+                    :value="task.id"
+                    v-model="selectedTasks"
+                  />
+                  {{ task.name }}</label
+                >
+                <button @click="removeTask(task.id)" class="delete-btn">❌</button>
+              </li>
+            </ul>
+            <h2 class="title-bottom">
+              Việc được chọn:
+              <span>{{ selectedTasks?.length }}</span>
+            </h2>
+          </div>
+          <div v-else>
+            <Loading />
+          </div>
         </div>
       </div>
 
@@ -219,12 +274,12 @@ watch(
     <div class="content" v-if="assignedTasks.length">
       <div class="result-box">
         <div class="list-result">
-          <h2 class="mb-0">Danh sách làm việc</h2>
+          <h2 class="mb-0">Kết quả phân công</h2>
           <button @click="copyToClipboard" class="btn-secondary">Sao chép</button>
         </div>
         <ul>
-          <li v-for="(task, index) in assignedTasks" :key="index">
-            {{ index + 1 }}. {{ task.person }} - {{ task.task }}
+          <li v-for="(item, index) in assignedTasks" :key="index">
+            {{ index + 1 }}. {{ item.person }} - {{ item.task }}
           </li>
         </ul>
       </div>

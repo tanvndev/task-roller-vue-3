@@ -21,6 +21,15 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   text-align: center;
 }
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.logo-container img {
+  width: 50px;
+}
 
 /* Tiêu đề */
 .title {
@@ -28,6 +37,9 @@
   margin-bottom: 20px;
   font-weight: bold;
   color: #333;
+}
+.logo-container .title {
+  margin-bottom: 0;
 }
 
 /* Bố cục danh sách */
