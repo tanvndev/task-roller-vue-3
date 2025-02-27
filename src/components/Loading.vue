@@ -27,7 +27,6 @@
   height: 12em;
   font-size: 14px;
   margin: auto;
-  margin-top: 50px;
 }
 
 .wheel,

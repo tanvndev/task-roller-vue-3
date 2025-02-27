@@ -21,6 +21,23 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   text-align: center;
 }
+
+.cards-container {
+  /* background: white; */
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.cards-container li {
+  list-style: none;
+  margin-left: 5px;
+  margin-right: 5px;
+}
 .logo-container {
   display: flex;
   align-items: center;
@@ -183,6 +200,7 @@ li {
   justify-self: center;
   align-items: center;
   gap: 10px;
+  margin-bottom: 14px;
 }
 
 /* ultil */
@@ -199,4 +217,11 @@ li {
 .my-10 {
   margin-top: 10px;
   margin-bottom: 10px;
+}
+.my-50 {
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+.mt-50 {
+  margin-top: 50px;
 }
