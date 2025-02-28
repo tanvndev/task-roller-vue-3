@@ -18,6 +18,7 @@ const tasks = ref([])
 const selectedPeople = ref([])
 const selectedTasks = ref([])
 const assignedTasks = ref([JSON.parse(localStorage.getItem('assignedTasks')) || []])
+const isLoading = ref(false)
 
 const allPeopleSelected = computed(() => selectedPeople.value.length === people.value.length)
 const allTasksSelected = computed(() => selectedTasks.value.length === tasks.value.length)
@@ -121,11 +122,19 @@ const assignTasks = async () => {
 }
 
 const getAllData = async () => {
-  const tasksSnapshot = await getDocs(collection(db, 'tasks'))
-  tasks.value = tasksSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+  try {
+    isLoading.value = true
 
-  const peopleSnapshot = await getDocs(collection(db, 'people'))
-  people.value = peopleSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+    const tasksSnapshot = await getDocs(collection(db, 'tasks'))
+    tasks.value = tasksSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+
+    const peopleSnapshot = await getDocs(collection(db, 'people'))
+    people.value = peopleSnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+  } catch (error) {
+    console.log(error)
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const copyToClipboard = () => {
@@ -180,7 +189,7 @@ watch(
             <button @click="addPerson" class="btn">Thêm</button>
           </div>
           <!-- List people -->
-          <div v-if="people.length">
+          <div v-if="!isLoading">
             <div class="my-10">
               <label class="cyberpunk-checkbox-label">
                 <input
@@ -231,7 +240,7 @@ watch(
           </div>
 
           <!-- List tasks -->
-          <div v-if="tasks.length">
+          <div v-if="!isLoading">
             <div class="my-10">
               <label class="cyberpunk-checkbox-label">
                 <input

@@ -13,6 +13,11 @@ const router = createRouter({
       name: 'statistic',
       component: () => import('@/views/Statistic.vue'),
     },
+    {
+      path: '/clear',
+      name: 'clear',
+      component: () => import('@/views/Clear.vue'),
+    },
   ],
 })
 
