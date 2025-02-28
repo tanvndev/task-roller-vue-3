@@ -24,7 +24,7 @@ const allTasksSelected = computed(() => selectedTasks.value.length === tasks.val
 
 const newPerson = ref('')
 const addPerson = async () => {
-  if (newPerson.value.trim() && !people.value.includes((p) => p.name === newPerson.value)) {
+  if (newPerson.value.trim() && people.value.includes((p) => p.name === newPerson.value)) {
     newPerson.value = ''
     return alert('Nhập tên chưa hay nhập trùng tên rồi ?')
   }
@@ -42,7 +42,7 @@ const removePerson = async (id) => {
 
 const newTask = ref('')
 const addTask = async () => {
-  if (newTask.value.trim() && !tasks.value.includes((t) => t.name === newTask.value)) {
+  if (newTask.value.trim() && tasks.value.includes((t) => t.name === newTask.value)) {
     newTask.value = ''
     return alert('Nhập việc chưa hay nhập trùng việc rồi ?')
   }
