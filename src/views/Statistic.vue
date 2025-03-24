@@ -34,7 +34,7 @@ const loadTableData = async () => {
       tasks: Object.keys(tasks).map((task) => ({
         task,
         count: tasks[task],
-      })),
+      })).sort((a, b) => b.count - a.count),
     }
   })
 
@@ -54,7 +54,7 @@ onMounted(() => {
         <ul class="task-list">
           <li v-for="(task, taskIndex) in personData.tasks" :key="taskIndex" class="task-item">
             <span class="task-name"
-              ><strong>{{ task.task }}</strong></span
+              ><strong>{{ task.task || 'Được ngồi chơi =))' }}</strong></span
             >
             <span class="task-count">{{ task.count }}</span>
           </li>

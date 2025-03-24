@@ -139,9 +139,10 @@ const getAllData = async () => {
 
 const copyToClipboard = () => {
   const text = assignedTasks.value
+    .filter((item) => item.person && item.task)
     .map((item, index) => `${index + 1}. ${item.person} - ${item.task}`)
-    .join('\n')
-  navigator.clipboard.writeText(text)
+    .join('\n');
+  navigator.clipboard.writeText(text);
 }
 
 // Load dữ liệu từ LocalStorage khi mở trang
@@ -287,9 +288,11 @@ watch(
           <button @click="copyToClipboard" class="btn-secondary">Sao chép</button>
         </div>
         <ul>
-          <li v-for="(item, index) in assignedTasks" :key="index">
-            {{ index + 1 }}. {{ item.person }} - {{ item.task }}
-          </li>
+          <div v-for="(item, index) in assignedTasks" :key="index">
+            <li v-if="item.person && item.task">
+              {{ index + 1 }}. {{ item.person }} - {{ item.task }}
+            </li>
+          </div>
         </ul>
         <RouterLink to="/statistic" class="a-underline"> Thống kê </RouterLink>
       </div>
