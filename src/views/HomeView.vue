@@ -12,7 +12,9 @@ import {
   where,
 } from 'firebase/firestore'
 import { computed, onMounted, ref, watch } from 'vue'
+import DXY from '/audio/DXY.mp3'
 
+const audioPlayer = ref(null)
 const people = ref([])
 const tasks = ref([])
 const selectedPeople = ref([])
@@ -67,6 +69,14 @@ const removeTask = async (id) => {
   getAllData()
 }
 
+const checkTimeRoller = () => {
+  const currentHour = new Date().getUTCHours() + 7 // Lấy giờ hiện tại theo múi giờ UTC+7
+  if (currentHour < 15 || currentHour >= 18) {
+    return false
+  }
+  return true
+}
+
 const assignTasks = async () => {
   if (people.value.length === 0 || tasks?.value.length === 0) {
     assignedTasks.value = []
@@ -76,6 +86,12 @@ const assignTasks = async () => {
   if (selectedPeople.value.length === 0 || selectedTasks.value.length === 0) {
     assignedTasks.value = []
     return alert('Nhìn xem đã chọn người và công việc chưa ?')
+  }
+
+  const checkTime = checkTimeRoller()
+  if (!checkTime) {
+    // Nếu không nằm trong khoảng 16h - 18h theo múi giờ UTC+7
+    return alert('16h - 18h mới được chia việc.')
   }
 
   let shuffledTasks = [...selectedTasks.value].sort(() => Math.random() - 0.5)
@@ -141,12 +157,13 @@ const copyToClipboard = () => {
   const text = assignedTasks.value
     .filter((item) => item.person && item.task)
     .map((item, index) => `${index + 1}. ${item.person} - ${item.task}`)
-    .join('\n');
-  navigator.clipboard.writeText(text);
+    .join('\n')
+  navigator.clipboard.writeText(text)
 }
 
 // Load dữ liệu từ LocalStorage khi mở trang
 onMounted(() => {
+  audioPlayer.value.play()
   getAllData()
   selectedPeople.value = JSON.parse(localStorage.getItem('selectedPeople')) || []
   selectedTasks.value = JSON.parse(localStorage.getItem('selectedTasks')) || []
@@ -167,6 +184,10 @@ watch(
 
 <template>
   <div class="fullscreen-container">
+    <audio ref="audioPlayer" controls class="d-none">
+      <source :src="DXY" type="audio/mp3" />
+      Trình duyệt của bạn không hỗ trợ thẻ audio.
+    </audio>
     <div class="content">
       <div class="logo-container">
         <img src="https://www.roller.software/hubfs/Favicon_192x192.png" alt="logo" class="logo" />
@@ -279,7 +300,8 @@ watch(
         </div>
       </div>
 
-      <button @click="assignTasks" class="btn-primary">Thực hiện</button>
+      <button @click="assignTasks" v-if="checkTimeRoller()" class="btn-primary">Thực hiện</button>
+      <small class="text-orange" v-if="!checkTimeRoller()"> 16h đến 18h mới được chia việc! </small>
     </div>
     <div class="content" v-if="assignedTasks.length">
       <div class="result-box">
@@ -363,5 +385,8 @@ watch(
   user-select: none;
   display: flex;
   align-items: center;
+}
+.text-orange {
+  color: #ff7f00;
 }
 </style>
