@@ -71,7 +71,7 @@ onMounted(() => {
 
 <template>
   <div class="fullscreen-container">
-    <audio ref="audioPlayer" controls class="d-none">
+    <audio ref="audioPlayer" controls loop class="d-none">
       <source v-if="checkOddEvenDayFromDate()" :src="SpinningCat" type="audio/mp3" />
       <source v-else :src="SpinningCat" type="audio/mp3" />
       Trình duyệt của bạn không hỗ trợ thẻ audio.

@@ -184,7 +184,7 @@ watch(
 
 <template>
   <div class="fullscreen-container">
-    <audio ref="audioPlayer" controls class="d-none">
+    <audio ref="audioPlayer" controls loop class="d-none">
       <source :src="DXY" type="audio/mp3" />
       Trình duyệt của bạn không hỗ trợ thẻ audio.
     </audio>
